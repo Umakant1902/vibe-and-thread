@@ -1,6 +1,7 @@
 import os
+import sys
 import requests
-import google.generativeai as genai
+from google import genai
 
 # 1. Load Secrets from Environment
 APIFY_TOKEN = os.getenv("APIFY_API_TOKEN")
@@ -26,6 +27,14 @@ def save_to_history(url):
 def fetch_apify_data():
     url = f"https://api.apify.com/v2/datasets/{DATASET_ID}/items?token={APIFY_TOKEN}"
     res = requests.get(url)
+    
+    # Catch 404 to provide a cleaner error message
+    if res.status_code == 404:
+        print(f"\nERROR: Apify Dataset ID '{DATASET_ID}' was not found.")
+        print("Free Apify datasets expire over time, or the ID is incorrect.")
+        print("Please run your scraper again to get a fresh Dataset ID and update your GitHub Secrets.")
+        sys.exit(1)
+        
     res.raise_for_status()
     return res.json()
 
@@ -45,10 +54,15 @@ def convert_link_earnkaro(product_url):
     return product_url
 
 def generate_seo_copy(title):
-    genai.configure(api_key=GEMINI_KEY)
-    model = genai.GenerativeModel("gemini-1.5-flash")
+    # Updated for new google-genai SDK
+    client = genai.Client(api_key=GEMINI_KEY)
     prompt = f"Write a compelling 50-character Pinterest title and a 2-sentence SEO description with hashtags #affiliate #fashion for this item: '{title}'."
-    response = model.generate_content(prompt)
+    
+    response = client.models.generate_content(
+        model='gemini-1.5-flash',
+        contents=prompt
+    )
+    
     text = response.text.strip().split("\n")
     
     seo_title = text[0].replace("#", "").strip()[:100]
