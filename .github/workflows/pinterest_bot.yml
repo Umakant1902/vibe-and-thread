@@ -5,15 +5,21 @@ on:
     - cron: '0 */4 * * *'  # Runs every 4 hours
   workflow_dispatch:       # Allows manual triggers from GitHub UI
 
+# GRANT WRITE PERMISSIONS FOR GIT PUSH
+permissions:
+  contents: write
+
 jobs:
   run-bot:
     runs-on: ubuntu-latest
     steps:
+      # UPDATED TO V4 (Node.js 24 Compatible)
       - name: Checkout Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
+      # UPDATED TO V5 (Node.js 24 Compatible)
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.10'
 
